@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#2e7d32">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Kasir Toko Buah Segar Jaya - Simulator Rumus Excel</title>
+
+  <style>
+    :root {
+      --primary: #2e7d32;
+      --primary-light: #4caf50;
+      --primary-dark: #1b5e20;
+      --accent: #ff9800;
+      --accent-dark: #f57c00;
+      --bg-color: #f0f4f1;
+      --card-bg: #ffffff;
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+      --danger: #dc2626;
+      --success: #16a34a;
+      --border: #d1d5db;
+      --target-bg: #eff6ff;
+      --target-color: #1d4ed8;
+
+      /* Safe area insets with fallback for iOS devices */
+      --sat: env(safe-area-inset-top, 0px);
+      --sab: env(safe-area-inset-bottom, 0px);
+      --sal: env(safe-area-inset-left, 0px);
+      --sar: env(safe-area-inset-right, 0px);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100vh;
+      min-height: 100dvh;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: var(--sat) var(--sar) var(--sab) var(--sal);
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      min-height: 100vh;
+      min-height: 100dvh;
+      background: var(--card-bg);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    }
+
+    @media (min-width: 481px) {
+      body {
+        padding-top: calc(var(--sat) + 16px);
+        padding-bottom: calc(var(--sab) + 16px);
+      }
+      .app-container {
+        min-height: auto;
+        border-radius: 20px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+      }
+    }
+
+    .header {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: white;
+      padding: calc(14px + var(--sat)) 16px 14px 16px;
+      text-align: center;
+      user-select: none;
+      -webkit-user-select: none;
+      flex-shrink: 0;
+    }
+
+    .header h1 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .header p {
+      font-size: 0.78rem;
+      opacity: 0.92;
+      margin-top: 2px;
+    }
+
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 10px 14px;
+      background: #e8f5e9;
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+      user-select: none;
+      -webkit-user-select: none;
+      flex-shrink: 0;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 6px 4px;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+      border: 1px solid rgba(46, 125, 50, 0.15);
+    }
+
+    .stat-label {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+      font-size: 0.98rem;
+      font-weight: 800;
+      color: var(--primary-dark);
+      margin-top: 2px;
+    }
+
+    .progress-wrapper {
+      padding: 0;
+      background: #e0e0e0;
+      height: 6px;
+      width: 100%;
+      flex-shrink: 0;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--accent);
+      width: 0%;
+      transition: width 0.35s ease-out;
+    }
+
+    .content {
+      padding: 14px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .scenario-card {
+      background: #fff8e1;
+      border-left: 4px solid var(--accent);
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      line-height: 1.45;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+      flex-shrink: 0;
+    }
+
+    .scenario-title {
+      font-weight: 700;
+      color: var(--accent-dark);
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+    }
+
+    .target-badge {
+      background: var(--accent-dark);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    /* CRITICAL FIX FOR SAFARI / IOS TABLE RENDERING */
+    .sheet-container {
+      display: block !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      min-height: 110px;
+      overflow-x: auto !important;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch !important;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #ffffff;
+      box-shadow: inset 0 0 4px rgba(0,0,0,0.02);
+      margin-bottom: 4px;
+      flex-shrink: 0;
+    }
+
+    .sheet-table {
+      width: 100% !important;
+      min-width: 280px;
+      border-collapse: collapse !important;
+      font-size: 0.82rem;
+      table-layout: auto;
+    }
+
+    .sheet-table th, .sheet-table td {
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .sheet-table th {
+      background: #f1f3f4;
+      color: #5f6368;
+      font-weight: 700;
+      font-size: 0.75rem;
+    }
+
+    .sheet-table td.col-header {
+      background: #f1f3f4;
+      color: #5f6368;
+      font-weight: 700;
+      width: 32px;
+    }
+
+    .sheet-table td.target-cell {
+      background: var(--target-bg);
+      color: var(--target-color);
+      font-weight: 800;
+      border: 2px solid var(--target-color);
+    }
+
+    .input-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: auto;
+      padding-bottom: calc(4px + var(--sab));
+      flex-shrink: 0;
+    }
+
+    .input-label {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* iOS Auto-Zoom fix: font-size 16px minimum */
+    .formula-input {
+      width: 100%;
+      height: 48px;
+      min-height: 48px;
+      padding: 0 14px;
+      font-size: 16px !important;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-weight: 700;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      outline: none;
+      text-transform: uppercase;
+      background-color: #fafafa;
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+
+    .formula-input:focus {
+      border-color: var(--primary);
+      background-color: #ffffff;
+      box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
+    }
+
+    .btn-action {
+      min-height: 48px;
+      height: 48px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 10px rgba(46, 125, 50, 0.25);
+      transition: background-color 0.15s, transform 0.1s;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .btn-action:active {
+      background-color: var(--primary-dark);
+      transform: scale(0.98);
+    }
+
+    .feedback-box {
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      display: none;
+      animation: fadeIn 0.25s ease-out;
+      flex-shrink: 0;
+    }
+
+    .feedback-box.error {
+      background: #fde8e8;
+      color: #c0392b;
+      border: 1px solid #f8b4b4;
+      display: block;
+    }
+
+    .feedback-box.success {
+      background: #def7ec;
+      color: var(--success);
+      border: 1px solid #84e1bc;
+      display: block;
+    }
+
+    .finish-screen {
+      text-align: center;
+      padding: 32px 20px calc(32px + var(--sab)) 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+    }
+
+    .finish-icon {
+      font-size: 3.5rem;
+      margin-bottom: -8px;
+    }
+
+    .finish-title {
+      font-size: 1.4rem;
+      color: var(--primary-dark);
+      font-weight: 800;
+    }
+
+    .score-badge-large {
+      background: #e8f5e9;
+      color: var(--primary-dark);
+      padding: 12px 24px;
+      border-radius: 50px;
+      font-size: 1.3rem;
+      font-weight: 800;
+      border: 2px solid var(--primary-light);
+      margin: 8px 0;
+    }
+
+    @media (max-width: 360px) {
+      .header h1 { font-size: 1.05rem; }
+      .stat-value { font-size: 0.88rem; }
+      .scenario-card { font-size: 0.82rem; }
+      .sheet-table { font-size: 0.75rem; }
+      .btn-action { min-height: 48px; font-size: 0.88rem; }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <div class="header">
+    <h1>Toko Buah Segar Jaya</h1>
+    <p>Mesin Kasir POS - Simulator Rumus Spreadsheet</p>
+  </div>
+
+  <div class="stats-bar" id="statsBar">
+    <div class="stat-card">
+      <div class="stat-label">Soal</div>
+      <div class="stat-value" id="questionNum">1 / 12</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Skor</div>
+      <div class="stat-value" id="scoreVal">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Nyawa</div>
+      <div class="stat-value" id="healthVal">❤️❤️❤️</div>
+    </div>
+  </div>
+
+  <div class="progress-wrapper" id="progressWrapper">
+    <div class="progress-bar-fill" id="progressBar"></div>
+  </div>
+
+  <div class="content" id="mainContent">
+    <div class="scenario-card">
+      <div class="scenario-title">
+        <span id="topicTitle">Kategori Rumus</span>
+        <span class="target-badge" id="cellTargetTag">Target: Sel --</span>
+      </div>
+      <p id="scenarioText">Memuat soal transaksi kasir...</p>
+    </div>
+
+    <!-- Live Preview Sheet Table Container (iOS Compatible) -->
+    <div class="sheet-container" id="sheetContainer"></div>
+
+    <!-- Interactive Formula Form -->
+    <div class="input-section">
+      <div class="input-label">
+        <span>Ketik Rumus Excel:</span>
+        <span style="font-weight: 400; font-size: 0.72rem; color: var(--text-muted);">Huruf Kapital</span>
+      </div>
+      <input 
+        type="text" 
+        id="formulaInput" 
+        class="formula-input" 
+        placeholder="Contoh: =SUM(A1:A5)" 
+        autocomplete="off" 
+        autocorrect="off"
+        autocapitalize="characters"
+        spellcheck="false"
+      >
+      <button class="btn-action" id="btnSubmit" onclick="checkAnswer()">PROSES TRANSAKSI</button>
+    </div>
+
+    <div class="feedback-box" id="feedbackBox"></div>
+  </div>
+
+  <div class="finish-screen" id="finishScreen" style="display: none;">
+    <div class="finish-icon">🍎🍊🍇</div>
+    <h2 class="finish-title">Misi Kasir Selesai!</h2>
+    <div class="score-badge-large" id="finalScoreText">Skor: 0 / 120</div>
+    <p id="performanceEvaluation" style="font-size: 0.88rem; color: var(--text-muted); max-width: 320px; line-height: 1.5;"></p>
+    <button class="btn-action" style="width: 100%; max-width: 300px; margin-top: 12px;" onclick="restartGame()">Ulangi Latihan</button>
+  </div>
+</div>
+
+<script>
+  const questionsData = [
+    // 1-2: PRODUCT
+    {
+      id: 1,
+      topic: "PRODUCT (Perkalian Total)",
+      text: "Pelanggan membeli Apel Fuji. Hitung total bayar di sel C2 dengan mengalikan Berat (KG) di B2 dan Harga/KG di C1.",
+      headers: ["A", "B", "C"],
+      rows: [
+        ["1", "Nama Buah", "Harga/KG", "25000"],
+        ["2", "Apel Fuji", "3", "? [C2]"]
+      ],
+      targetCell: "C2",
+      validFormulas: ["=PRODUCT(B2,C1)", "=PRODUCT(C1,B2)"],
+      hint: "Gunakan fungsi =PRODUCT(sel1, sel2) untuk mengalikan Berat (B2) dengan Harga/KG (C1)."
+    },
+    {
+      id: 2,
+      topic: "PRODUCT (Perkalian Total)",
+      text: "Seorang pembeli memborong Mangga Harum Manis. Hitung total belanjaan di sel D2 berdasarkan Jumlah KG (B2) dan Harga/KG (C2).",
+      headers: ["A", "B", "C", "D"],
+      rows: [
+        ["1", "Nama Buah", "Jumlah (KG)", "Harga/KG", "Total Bayar"],
+        ["2", "Mangga", "5", "18000", "? [D2]"]
+      ],
+      targetCell: "D2",
+      validFormulas: ["=PRODUCT(B2,C2)", "=PRODUCT(C2,B2)"],
+      hint: "Gunakan =PRODUCT(B2,C2) untuk menghitung total bayar mangga."
+    },
+
+    // 3-4: SUM
+    {
+      id: 3,
+      topic: "SUM (Penjumlahan)",
+      text: "Hitung total pendapatan kasir untuk 3 nota transaksi di sel B5 dari rentang B2 sampai B4.",
+      headers: ["A", "B"],
+      rows: [
+        ["1", "No Nota", "Total Transaksi"],
+        ["2", "NT-01", "45000"],
+        ["3", "NT-02", "30000"],
+        ["4", "NT-03", "85000"],
+        ["5", "Total Pendapatan", "? [B5]"]
+      ],
+      targetCell: "B5",
+      validFormulas: ["=SUM(B2:B4)", "=SUM(B2,B3,B4)"],
+      hint: "Gunakan fungsi rentang penjumlahan =SUM(B2:B4) pada kolom Total Transaksi."
+    },
+    {
+      id: 4,
+      topic: "SUM (Penjumlahan)",
+      text: "Hitung total keseluruhan KG buah yang terjual selama Shift Pagi di sel B5 dari rentang sel B2 hingga B4.",
+      headers: ["A", "B"],
+      rows: [
+        ["1", "Jenis Buah", "Terjual (KG)"],
+        ["2", "Jeruk", "12"],
+        ["3", "Semangka", "25"],
+        ["4", "Melon", "15"],
+        ["5", "Total Terjual", "? [B5]"]
+      ],
+      targetCell: "B5",
+      validFormulas: ["=SUM(B2:B4)", "=SUM(B2,B3,B4)"],
+      hint: "Gunakan fungsi =SUM(B2:B4) untuk menjumlahkan seluruh KG."
+    },
+
+    // 5-6: SUMIF
+    {
+      id: 5,
+      topic: "SUMIF (Kriteria Tunggal)",
+      text: "Hitung total penjualan khusus buah kategori 'Lokal' di sel C6. Rentang Kategori (A2:A5), kriteria \"Lokal\", dan rentang Penjualan (C2:C5).",
+      headers: ["A", "B", "C"],
+      rows: [
+        ["1", "Kategori", "Buah", "Penjualan (Rp)"],
+        ["2", "Lokal", "Pisang", "50000"],
+        ["3", "Impor", "Anggur", "120000"],
+        ["4", "Lokal", "Salak", "40000"],
+        ["5", "Impor", "Kiwi", "90000"],
+        ["6", "Total Lokal", "-", "? [C6]"]
+      ],
+      targetCell: "C6",
+      validFormulas: [
+        '=SUMIF(A2:A5,"Lokal",C2:C5)',
+        '=SUMIF(A2:A5;"Lokal";C2:C5)'
+      ],
+      hint: "Format: =SUMIF(range_kategori, \"Lokal\", range_penjualan). Contoh: =SUMIF(A2:A5,\"Lokal\",C2:C5)"
+    },
+    {
+      id: 6,
+      topic: "SUMIF (Kriteria Tunggal)",
+      text: "Hitung total KG buah yang dikirim menggunakan armada 'Truk' di sel C6 dari data pengiriman.",
+      headers: ["A", "B", "C"],
+      rows: [
+        ["1", "Armada", "Buah", "Berat (KG)"],
+        ["2", "Truk", "Jeruk", "150"],
+        ["3", "Pikup", "Nanas", "80"],
+        ["4", "Truk", "Pepaya", "200"],
+        ["5", "Pikup", "Alpukat", "60"],
+        ["6", "Total Truk", "-", "? [C6]"]
+      ],
+      targetCell: "C6",
+      validFormulas: [
+        '=SUMIF(A2:A5,"Truk",C2:C5)',
+        '=SUMIF(A2:A5;"Truk";C2:C5)'
+      ],
+      hint: "Sintaks: =SUMIF(A2:A5,\"Truk\",C2:C5)"
+    },
+
+    // 7-8: SUMIFS
+    {
+      id: 7,
+      topic: "SUMIFS (Banyak Kriteria)",
+      text: "Hitung total penjualan di sel D6 khusus untuk Buah 'Apel' yang dijual pada Shift 'Pagi'. Rentang sum (D2:D5), range1 (A2:A5)=\"Apel\", range2 (C2:C5)=\"Pagi\".",
+      headers: ["A", "B", "C", "D"],
+      rows: [
+        ["1", "Buah", "Kasir", "Shift", "Total (Rp)"],
+        ["2", "Apel", "Budi", "Pagi", "50000"],
+        ["3", "Apel", "Siti", "Malam", "70000"],
+        ["4", "Jeruk", "Budi", "Pagi", "40000"],
+        ["5", "Apel", "Budi", "Pagi", "60000"],
+        ["6", "Apel Pagi", "-", "-", "? [D6]"]
+      ],
+      targetCell: "D6",
+      validFormulas: [
+        '=SUMIFS(D2:D5,A2:A5,"Apel",C2:C5,"Pagi")',
+        '=SUMIFS(D2:D5;A2:A5;"Apel";C2:C5;"Pagi")'
+      ],
+      hint: "Sintaks SUMIFS: =SUMIFS(sum_range, criteria_range1, \"Apel\", criteria_range2, \"Pagi\")."
+    },
+    {
+      id: 8,
+      topic: "SUMIFS (Banyak Kriteria)",
+      text: "Hitung total stok buah jenis 'Lokal' yang kondisinya 'Segar' di sel D6.",
+      headers: ["A", "B", "C", "D"],
+      rows: [
+        ["1", "Jenis", "Kondisi", "Stok", "Lokasi"],
+        ["2", "Lokal", "Segar", "40", "Rak A"],
+        ["3", "Impor", "Segar", "25", "Rak B"],
+        ["4", "Lokal", "Layu", "10", "Rak A"],
+        ["5", "Lokal", "Segar", "30", "Rak A"],
+        ["6", "Tot. Lkl Sgr", "-", "-", "? [D6]"]
+      ],
+      targetCell: "D6",
+      validFormulas: [
+        '=SUMIFS(C2:C5,A2:A5,"Lokal",B2:B5,"Segar")',
+        '=SUMIFS(C2:C5;A2:A5;"Lokal";B2:B5;"Segar")'
+      ],
+      hint: "Sintaks: =SUMIFS(C2:C5,A2:A5,\"Lokal\",B2:B5,\"Segar\")"
+    },
+
+    // 9-10: QUOTIENT
+    {
+      id: 9,
+      topic: "QUOTIENT (Pembagian Bulat)",
+      text: "Ada 23 KG Jeruk di B2. Setiap keranjang muat 5 KG (C2). Hitung berapa keranjang PENUH yang bisa diisi di sel D2 tanpa memperhitungkan sisa.",
+      headers: ["A", "B", "C", "D"],
+      rows: [
+        ["1", "Buah", "Stok (KG)", "Kapasitas/Kranjang", "Keranjang Penuh"],
+        ["2", "Jeruk", "23", "5", "? [D2]"]
+      ],
+      targetCell: "D2",
+      validFormulas: ["=QUOTIENT(B2,C2)", "=QUOTIENT(B2;C2)"],
+      hint: "Gunakan fungsi pembagian bulat =QUOTIENT(numerator, denominator). Contoh: =QUOTIENT(B2,C2)"
+    },
+    {
+      id: 10,
+      topic: "QUOTIENT (Pembagian Bulat)",
+      text: "Gudang memiliki 55 botol Jus Mangga (B2). Setiap kardus memuat 12 botol (C2). Hitung jumlah kardus penuh di sel D2.",
+      headers: ["A", "B", "C", "D"],
+      rows: [
+        ["1", "Produk", "Tot. Botol", "Isi/Kardus", "Kardus Penuh"],
+        ["2", "Jus Mangga", "55", "12", "? [D2]"]
+      ],
+      targetCell: "D2",
+      validFormulas: ["=QUOTIENT(B2,C2)", "=QUOTIENT(B2;C2)"],
+      hint: "Sintaks: =QUOTIENT(B2,C2)"
+    },
+
+    // 11-12: MOD
+    {
+      id: 11,
+      topic: "MOD (Sisa Pembagian)",
+      text: "Dari 23 KG Jeruk (B2) yang dimasukkan ke keranjang kapasitas 5 KG (C2), hitung sisa buah KG eceran yang TIDAK muat di sel D2.",
+      headers: ["A", "B", "C", "D"],
+      rows: [
+        ["1", "Buah", "Stok (KG)", "Kapasitas/Kranjang", "Sisa Eceran (KG)"],
+        ["2", "Jeruk", "23", "5", "? [D2]"]
+      ],
+      targetCell: "D2",
+      validFormulas: ["=MOD(B2,C2)", "=MOD(B2;C2)"],
+      hint: "Gunakan fungsi sisa pembagian =MOD(number, divisor). Contoh: =MOD(B2,C2)"
+    },
+    {
+      id: 12,
+      topic: "MOD (Sisa Pembagian)",
+      text: "Dari 55 botol Jus Mangga (B2) yang dikemas ke kardus isi 12 (C2), hitung berapa botol sisa yang dijual eceran di sel D2.",
+      headers: ["A", "B", "C", "D"],
+      rows: [
+        ["1", "Produk", "Tot. Botol", "Isi/Kardus", "Sisa Eceran"],
+        ["2", "Jus Mangga", "55", "12", "? [D2]"]
+      ],
+      targetCell: "D2",
+      validFormulas: ["=MOD(B2,C2)", "=MOD(B2;C2)"],
+      hint: "Sintaks: =MOD(B2,C2)"
+    }
+  ];
+
+  let currentIdx = 0;
+  let score = 0;
+  let health = 3;
+
+  const questionNumEl = document.getElementById("questionNum");
+  const scoreValEl = document.getElementById("scoreVal");
+  const healthValEl = document.getElementById("healthVal");
+  const progressBarEl = document.getElementById("progressBar");
+  const topicTitleEl = document.getElementById("topicTitle");
+  const cellTargetTagEl = document.getElementById("cellTargetTag");
+  const scenarioTextEl = document.getElementById("scenarioText");
+  const sheetContainerEl = document.getElementById("sheetContainer");
+  const formulaInputEl = document.getElementById("formulaInput");
+  const feedbackBoxEl = document.getElementById("feedbackBox");
+  const mainContentEl = document.getElementById("mainContent");
+  const finishScreenEl = document.getElementById("finishScreen");
+  const statsBarEl = document.getElementById("statsBar");
+  const progressWrapperEl = document.getElementById("progressWrapper");
+
+  function loadQuestion() {
+    const q = questionsData[currentIdx];
+    
+    formulaInputEl.value = "";
+    feedbackBoxEl.className = "feedback-box";
+    feedbackBoxEl.style.display = "none";
+    health = 3;
+    updateHealthDisplay();
+
+    questionNumEl.textContent = `${currentIdx + 1} / ${questionsData.length}`;
+    topicTitleEl.textContent = q.topic;
+    cellTargetTagEl.textContent = `Target: Sel ${q.targetCell}`;
+    scenarioTextEl.textContent = q.text;
+
+    const progressPercent = (currentIdx / questionsData.length) * 100;
+    progressBarEl.style.width = `${progressPercent}%`;
+
+    // Render Table - Ensured compatibility with WebKit rendering
+    let tableHTML = `<table class="sheet-table"><thead><tr><th></th>`;
+    q.headers.forEach(h => {
+      tableHTML += `<th>${h}</th>`;
+    });
+    tableHTML += `</tr></thead><tbody>`;
+
+    q.rows.forEach(row => {
+      tableHTML += `<tr><td class="col-header">${row[0]}</td>`;
+      for (let i = 1; i < row.length; i++) {
+        const cellValue = row[i];
+        const isTarget = cellValue.includes("?");
+        tableHTML += `<td class="${isTarget ? 'target-cell' : ''}">${cellValue}</td>`;
+      }
+      tableHTML += `</tr>`;
+    });
+    tableHTML += `</tbody></table>`;
+
+    sheetContainerEl.innerHTML = tableHTML;
+    sheetContainerEl.scrollLeft = 0;
+  }
+
+  function updateHealthDisplay() {
+    let hearts = "";
+    for (let i = 0; i < 3; i++) {
+      hearts += i < health ? "❤️" : "🖤";
+    }
+    healthValEl.textContent = hearts;
+  }
+
+  function cleanFormula(str) {
+    return str.replace(/\s+/g, '').toUpperCase();
+  }
+
+  function checkAnswer() {
+    const userRaw = formulaInputEl.value.trim();
+    if (!userRaw) {
+      showFeedback("Ketikkan rumus terlebih dahulu!", "error");
+      return;
+    }
+
+    const cleanedUser = cleanFormula(userRaw);
+    const q = questionsData[currentIdx];
+    const isCorrect = q.validFormulas.some(f => cleanFormula(f) === cleanedUser);
+
+    if (isCorrect) {
+      score += 10;
+      scoreValEl.textContent = score;
+      showFeedback("✨ TRANSAKSI BERHASIL! Rumus Anda Tepat.", "success");
+      
+      setTimeout(() => {
+        currentIdx++;
+        if (currentIdx < questionsData.length) {
+          loadQuestion();
+        } else {
+          showFinishScreen();
+        }
+      }, 1100);
+
+    } else {
+      health--;
+      updateHealthDisplay();
+
+      if (health > 0) {
+        showFeedback(`❌ Rumus Salah/Kurang Tepat.\n\nHint: ${q.hint}`, "error");
+      } else {
+        showFeedback(`💔 Kesempatan habis! Rumus yang benar: ${q.validFormulas[0]}`, "error");
+        setTimeout(() => {
+          currentIdx++;
+          if (currentIdx < questionsData.length) {
+            loadQuestion();
+          } else {
+            showFinishScreen();
+          }
+        }, 2400);
+      }
+    }
+  }
+
+  function showFeedback(msg, type) {
+    feedbackBoxEl.textContent = msg;
+    feedbackBoxEl.className = `feedback-box ${type}`;
+    feedbackBoxEl.style.display = "block";
+    feedbackBoxEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function showFinishScreen() {
+    mainContentEl.style.display = "none";
+    statsBarEl.style.display = "none";
+    progressWrapperEl.style.display = "none";
+    finishScreenEl.style.display = "flex";
+
+    document.getElementById("finalScoreText").textContent = `Skor: ${score} / 120`;
+    
+    let evalText = "";
+    if (score >= 100) {
+      evalText = "Sangat Luar Biasa! Anda sudah mahir menjadi Kasir Senior spreadsheet!";
+    } else if (score >= 70) {
+      evalText = "Bagus! Anda memahami sebagian besar logika fungsi spreadsheet.";
+    } else {
+      evalText = "Perlu berlatih lagi. Pelajari kembali penggunaan nama sel dan penulisan sintaks rumus.";
+    }
+    document.getElementById("performanceEvaluation").textContent = evalText;
+  }
+
+  function restartGame() {
+    currentIdx = 0;
+    score = 0;
+    scoreValEl.textContent = "0";
+    mainContentEl.style.display = "flex";
+    statsBarEl.style.display = "grid";
+    progressWrapperEl.style.display = "block";
+    finishScreenEl.style.display = "none";
+    loadQuestion();
+  }
+
+  formulaInputEl.addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      checkAnswer();
+    }
+  });
+
+  window.onload = function() {
+    loadQuestion();
+  };
+</script>
+</body>
+</html>
