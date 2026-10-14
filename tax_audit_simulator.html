@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulasi Audit Pajak PPh 21 - SMK Akuntansi</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            800: '#1e293b',
+                            900: '#0f172a',
+                            950: '#020617',
+                        },
+                        gold: {
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        @keyframes sirenFlash {
+            0%, 100% { background-color: rgba(239, 68, 68, 0.65); }
+            50% { background-color: rgba(59, 130, 246, 0.65); }
+        }
+        .siren-active {
+            animation: sirenFlash 0.25s infinite alternate;
+        }
+
+        @keyframes stampAnim {
+            0% { transform: scale(3) rotate(-20deg); opacity: 0; }
+            100% { transform: scale(1) rotate(-8deg); opacity: 1; }
+        }
+        .stamp-effect {
+            animation: stampAnim 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .paper-texture {
+            background-color: #fcfbf9;
+            background-image: radial-gradient(#cbd5e1 0.75px, transparent 0.75px);
+            background-size: 10px 10px;
+        }
+    </style>
+</head>
+<body class="bg-navy-950 text-slate-100 font-sans min-h-screen flex flex-col justify-between selection:bg-gold-500 selection:text-navy-950">
+
+    <header class="border-b border-slate-800 bg-navy-900/90 backdrop-blur sticky top-0 z-30 px-4 lg:px-8 py-3 flex justify-between items-center shadow-xl">
+        <div class="flex items-center space-x-3">
+            <div class="bg-gradient-to-tr from-gold-600 to-gold-400 text-navy-950 p-2.5 rounded-xl font-black text-xl shadow-md flex items-center justify-center w-10 h-10">
+                <i class="fa-solid fa-calculator"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-base lg:text-lg text-slate-100 tracking-tight leading-none">TAX AUDIT SIMULATOR</h1>
+                <p class="text-xs text-gold-400 font-medium tracking-wide mt-1">PPh Pasal 21 TER Edition - SMK Akuntansi Kelas 11</p>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-3">
+            <button onclick="toggleReferenceModal()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs font-semibold flex items-center gap-2 transition shadow">
+                <i class="fa-solid fa-book-bookmark text-gold-400"></i>
+                <span class="hidden sm:inline">Buku Saku TER & UU HPP</span>
+            </button>
+            <div id="userInfoHeader" class="hidden flex items-center gap-2 bg-navy-800 border border-slate-700 px-3 py-1 rounded-lg text-xs">
+                <i class="fa-solid fa-user-check text-emerald-400"></i>
+                <span id="headerAuditorName" class="font-bold text-slate-200"></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 py-6 max-w-7xl">
+
+        <section id="introScreen" class="max-w-2xl mx-auto bg-navy-900 border border-slate-800 rounded-2xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
+            <div class="absolute -top-24 -right-24 w-60 h-60 bg-gold-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            
+            <div class="text-center mb-6">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-navy-800 border border-gold-500/30 rounded-2xl text-gold-400 text-2xl mb-3 shadow-inner">
+                    <i class="fa-solid fa-user-tie"></i>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-extrabold text-slate-100">Penugasan Audit Pajak PPh 21</h2>
+                <p class="text-xs md:text-sm text-slate-400 mt-2 max-w-lg mx-auto leading-relaxed">
+                    Selamat datang, <strong>Junior Auditor</strong>! Selamat bergabung di KAP Kami. Anda ditugaskan mengaudit pemotongan **PPh Pasal 21** pada 13 berkas slip gaji klien kami sesuai regulasi **PP No. 58/2023 & PMK No. 168/2023**.
+                </p>
+            </div>
+
+            <!-- Warning Box -->
+            <div class="bg-red-950/40 border border-red-800/60 rounded-xl p-4 mb-6 flex items-start space-x-3">
+                <i class="fa-solid fa-triangle-exclamation text-red-400 text-xl mt-0.5 shrink-0"></i>
+                <div class="text-xs text-red-200 leading-relaxed">
+                    <strong class="font-bold text-red-400 block mb-1">SISTEM KINERJA AUDIT (3 STRIKES SYSTEM):</strong>
+                    Batas toleransi kesalahan Anda adalah <strong>3 KALI ERROR (3 STRIKES)</strong>. Jika salah sebanyak 3 kali, Anda dinyatakan melakukan malpraktik audit dan akan <strong>DITANGKAP OLEH PIHAK BERWAJIB!</strong>
+                </div>
+            </div>
+
+            <form id="startForm" onsubmit="startGame(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Nama Lengkap Siswa</label>
+                    <input type="text" id="auditorName" required placeholder="Contoh: Budi Pratama" 
+                        class="w-full bg-navy-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-gold-500 transition">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">NISN / NIP Siswa</label>
+                        <input type="text" id="auditorNip" required placeholder="Contoh: 0061234567" 
+                            class="w-full bg-navy-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-gold-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Kelas / Rombel SMK</label>
+                        <input type="text" id="auditorInstansi" required placeholder="Contoh: XI AKL 1" 
+                            class="w-full bg-navy-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-gold-500 transition">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full mt-4 bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-400 hover:to-gold-500 text-navy-950 font-bold py-3 rounded-xl shadow-lg transition transform active:scale-[0.99] flex items-center justify-center gap-2 text-sm">
+                    <span>Mulai Simulasi Audit Pajak</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+        </section>
+
+        <section id="gameScreen" class="hidden space-y-6">
+            
+            <!-- HUD Progress Stats Bar -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-navy-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+                    <div>
+                        <p class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Berkas Audit</p>
+                        <p id="hudProgress" class="text-xl font-black text-slate-100 mt-1">1 / 13</p>
+                    </div>
+                    <div class="text-gold-400 bg-gold-500/10 p-2.5 rounded-lg text-lg"><i class="fa-solid fa-folder-open"></i></div>
+                </div>
+
+                <div class="bg-navy-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+                    <div>
+                        <p class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Skor Kinerja</p>
+                        <p id="hudScore" class="text-xl font-black text-emerald-400 mt-1">0 Pts</p>
+                    </div>
+                    <div class="text-emerald-400 bg-emerald-500/10 p-2.5 rounded-lg text-lg"><i class="fa-solid fa-award"></i></div>
+                </div>
+
+                <div class="bg-navy-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+                    <div>
+                        <p class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Indikator Pelanggaran</p>
+                        <div id="hudStrikes" class="flex gap-1.5 mt-2">
+                            <!-- Injected via JS -->
+                        </div>
+                    </div>
+                    <div class="text-red-400 bg-red-500/10 p-2.5 rounded-lg text-lg"><i class="fa-solid fa-shield-halved"></i></div>
+                </div>
+
+                <div class="bg-navy-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+                    <div>
+                        <p class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Status Risiko</p>
+                        <p id="hudStatus" class="text-xs font-bold text-emerald-400 mt-1">PATUH & AMAN</p>
+                    </div>
+                    <div class="text-blue-400 bg-blue-500/10 p-2.5 rounded-lg text-lg"><i class="fa-solid fa-magnifying-glass-dollar"></i></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Left Column: Case Question Paper -->
+                <div class="lg:col-span-7 space-y-4">
+                    
+                    <div class="bg-navy-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+                        <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
+                            <span id="caseCategoryBadge" class="bg-gold-500/10 text-gold-400 text-xs font-bold px-3 py-1 rounded-full border border-gold-500/20">
+                                KATEGORI BULANAN
+                            </span>
+                            <span id="caseIdBadge" class="text-xs font-mono text-slate-400">Soal #1 dari 13</span>
+                        </div>
+                        <h3 id="caseTitle" class="text-lg font-bold text-slate-100">Judul Kasus</h3>
+                        <!-- Notice: STRICTLY NO ANSWERS OR RATES SHOWN HERE -->
+                        <div id="caseText" class="text-xs md:text-sm text-slate-200 mt-2 leading-relaxed bg-navy-950 p-4 rounded-xl border border-slate-800 font-sans">
+                            Loading deskripsi soal...
+                        </div>
+                    </div>
+
+                    <!-- Visual Slip Gaji Voucher -->
+                    <div class="paper-texture rounded-2xl p-6 text-slate-900 border border-slate-300 shadow-2xl relative overflow-hidden font-mono text-xs">
+                        <!-- Stamp Overlay Container -->
+                        <div id="stampOverlay" class="absolute inset-0 flex items-center justify-center pointer-events-none z-20 hidden">
+                            <div id="stampBadge" class="border-4 px-6 py-3 rounded-2xl text-2xl font-black uppercase tracking-widest stamp-effect">
+                                AUDIT PASSED
+                            </div>
+                        </div>
+
+                        <div class="border-b-2 border-slate-800 pb-3 mb-4 flex justify-between items-end">
+                            <div>
+                                <h4 class="font-bold text-sm tracking-tight text-slate-900">KAP SENIOR TAX AUDITOR</h4>
+                                <p class="text-[10px] text-slate-600">BERKAS DOKUMEN UJI PETIK SLIP GAJI</p>
+                            </div>
+                            <div class="text-right text-[10px]">
+                                <p>Status: <span class="font-bold text-blue-900">MENUNGGU AUDIT SISWA</span></p>
+                                <p>Regulasi: PP 58/2023 & PMK 168/2023</p>
+                            </div>
+                        </div>
+
+                        <div id="docDetailsList" class="space-y-2 text-slate-800">
+                            <!-- Details dynamically populated by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Audit Worksheet Form -->
+                <div class="lg:col-span-5 space-y-4">
+                    <div class="bg-navy-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+                        <div class="flex items-center gap-2 mb-4 pb-2 border-b border-slate-800">
+                            <i class="fa-solid fa-file-pen text-gold-400"></i>
+                            <h3 class="font-bold text-slate-100 text-sm">Lembar Kerja Audit (LKA) Siswa</h3>
+                        </div>
+
+                        <form id="auditAnswerForm" onsubmit="submitAuditFinding(event)" class="space-y-4">
+                            
+                            <!-- Input 1: TER Category -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1">
+                                    1. Skema / Kategori TER yang Berlaku
+                                </label>
+                                <select id="inputCategory" required class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-gold-500">
+                                    <option value="" disabled selected>-- Pilih Skema Kategori --</option>
+                                    <option value="TER A">TER Kategori A</option>
+                                    <option value="TER B">TER Kategori B</option>
+                                    <option value="TER C">TER Kategori C</option>
+                                    <option value="Pasal 17">Pasal 17 UU HPP (Tahunan/Rekonsiliasi)</option>
+                                </select>
+                            </div>
+
+                            <!-- Input 2: Calculated Monthly Bruto / PKP -->
+                            <div>
+                                <label id="labelBrutoPkp" class="block text-xs font-semibold text-slate-300 mb-1">
+                                    2. Dasar Penghasilan Bruto / PKP (Rp)
+                                </label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-2.5 text-xs text-slate-400 font-bold">Rp</span>
+                                    <input type="text" id="inputBrutoPkp" required placeholder="0" oninput="formatRupiahInput(this)"
+                                        class="w-full bg-navy-950 border border-slate-700 rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-gold-500 font-mono">
+                                </div>
+                                <p id="helpBrutoPkp" class="text-[10px] text-slate-400 mt-1">Masukkan penghasilan bruto sebulan/PKP tahunan</p>
+                            </div>
+
+                            <!-- Input 3: Final Calculated Tax -->
+                            <div>
+                                <label id="labelFinalTax" class="block text-xs font-semibold text-slate-300 mb-1">
+                                    3. Hasil Akhir PPh Pasal 21 Terutang (Rp)
+                                </label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-2.5 text-xs text-slate-400 font-bold">Rp</span>
+                                    <input type="text" id="inputTaxAmount" required placeholder="0" oninput="formatRupiahInput(this)"
+                                        class="w-full bg-navy-950 border border-slate-700 rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-gold-500 font-mono font-bold">
+                                </div>
+                                <p id="helpFinalTax" class="text-[10px] text-slate-400 mt-1">Hitung PPh 21 sesuai periode pemotongan</p>
+                            </div>
+
+                            <button type="submit" id="btnSubmitAudit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2 text-xs">
+                                <i class="fa-solid fa-stamp"></i>
+                                <span>Kirim & Verifikasi Hasil Audit</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <div id="feedbackBox" class="hidden bg-navy-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+                        <div id="feedbackHeader" class="flex items-center gap-2 font-bold text-sm">
+                            <!-- Injected dynamically -->
+                        </div>
+                        <div id="feedbackDetails" class="text-xs text-slate-300 space-y-2 bg-navy-950 p-3 rounded-xl border border-slate-800 font-mono">
+                            <!-- Details injected dynamically -->
+                        </div>
+                        <button onclick="nextCase()" class="w-full bg-gold-500 hover:bg-gold-400 text-navy-950 font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2">
+                            <span>Lanjut ke Soal Berikutnya</span>
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="policeScreen" class="hidden max-w-2xl mx-auto text-center space-y-6 my-auto">
+            <div class="bg-red-950/90 border-4 border-red-600 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+                <div class="inline-flex items-center justify-center w-24 h-24 bg-red-900/60 rounded-full text-red-500 text-5xl mb-4 border-2 border-red-500/50 animate-bounce">
+                    <i class="fa-solid fa-handcuffs"></i>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-black text-red-500 tracking-tight uppercase">AUDIT GAGAL: DITANGKAP PIHAK BERWAJIB!</h2>
+                <p class="text-xs md:text-sm text-red-200 mt-2 font-bold uppercase tracking-wider">
+                    JUNIOR AUDITOR TERBAWA KASUS HUKUM AKIBAT 3 KALI KESALAHAN AUDIT PAJAK!
+                </p>
+
+                <div class="bg-navy-950 border border-red-900/80 rounded-xl p-4 my-6 text-left font-mono text-xs text-slate-300 space-y-2">
+                    <p class="text-red-400 font-bold border-b border-red-900 pb-1">BERITA ACARA PENANGKAPAN & MALPRAKTIK:</p>
+                    <p>Nama Tersangka: <span id="bapAuditorName" class="text-white font-bold"></span></p>
+                    <p>NISN / NIP: <span id="bapAuditorNip" class="text-white font-bold"></span></p>
+                    <p>Kelas / SMK: <span id="bapAuditorInstansi" class="text-white font-bold"></span></p>
+                    <p class="text-red-300 mt-2">Dugaan Pelanggaran: Terbukti melanggar prosedur audit dan keliru menghitung PPh Pasal 21 sebanyak 3 kali berturut-turut.</p>
+                </div>
+
+                <button onclick="resetGame()" class="bg-red-600 hover:bg-red-500 text-white font-bold px-8 py-3.5 rounded-xl shadow-xl transition text-xs flex items-center justify-center gap-2 mx-auto uppercase tracking-wider">
+                    <i class="fa-solid fa-rotate-left"></i>
+                    <span>Coba Ulang Simulasi Audit</span>
+                </button>
+            </div>
+        </section>
+
+        <section id="resultScreen" class="hidden max-w-3xl mx-auto space-y-6">
+            <div class="bg-navy-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl space-y-6">
+                <div class="text-center space-y-2">
+                    <div class="inline-flex items-center justify-center w-16 h-16 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-emerald-400 text-3xl mb-1">
+                        <i class="fa-solid fa-award"></i>
+                    </div>
+                    <h2 class="text-2xl font-black text-slate-100">Laporan Akhir Kinerja Audit Pajak</h2>
+                    <p class="text-xs text-slate-400">Rekapitulasi Evaluasi PPh Pasal 21 TER - SMK Akuntansi</p>
+                </div>
+
+                <!-- Final Score Summary Card -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-navy-950 p-4 rounded-2xl border border-slate-800 text-center">
+                    <div class="p-3">
+                        <p class="text-[10px] text-slate-400 uppercase font-bold">Nilai Akhir Siswa</p>
+                        <p id="finalScore" class="text-3xl font-black text-gold-400 mt-1">100</p>
+                    </div>
+                    <div class="p-3 border-y md:border-y-0 md:border-x border-slate-800">
+                        <p class="text-[10px] text-slate-400 uppercase font-bold">Akurasi Soal</p>
+                        <p id="finalAccuracy" class="text-3xl font-black text-emerald-400 mt-1">13 / 13</p>
+                    </div>
+                    <div class="p-3">
+                        <p class="text-[10px] text-slate-400 uppercase font-bold">Predikat Kelulusan</p>
+                        <p id="finalPredicate" class="text-xs font-bold text-blue-400 mt-3">AUDITOR UNGGULAN</p>
+                    </div>
+                </div>
+
+                <!-- Detailed Breakdown List -->
+                <div class="space-y-2">
+                    <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Rekapitulasi 13 Soal Audit:</h4>
+                    <div id="resultBreakdownList" class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                        <!-- Injected via JS -->
+                    </div>
+                </div>
+
+                <!-- Action Export Buttons -->
+                <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-slate-800">
+                    <button onclick="exportToExcel()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-lg">
+                        <i class="fa-solid fa-file-excel text-base"></i>
+                        <span>Download Rekap Nilai (.csv / Excel)</span>
+                    </button>
+                    <button onclick="resetGame()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-6 py-3.5 rounded-xl text-xs transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        <span>Ulangi Simulasi</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <div id="referenceModal" class="fixed inset-0 bg-navy-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-navy-900 border border-slate-700 rounded-2xl w-full max-w-4xl max-h-[85vh] flex flex-col shadow-2xl">
+            <div class="p-4 border-b border-slate-800 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-book-open text-gold-400"></i>
+                    <h3 class="font-bold text-slate-100 text-sm">Buku Saku Panduan TER (PP 58/2023) & Pasal 17 UU HPP</h3>
+                </div>
+                <button onclick="toggleReferenceModal()" class="text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="p-6 overflow-y-auto space-y-6 text-xs text-slate-300">
+                <!-- TER Category Mapping -->
+                <div>
+                    <h4 class="font-bold text-gold-400 text-sm mb-2">1. Pengelompokan Kategori TER Berdasarkan Status PTKP</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div class="bg-navy-950 p-3 rounded-xl border border-slate-800">
+                            <strong class="text-emerald-400 block mb-1">TER KATEGORI A</strong>
+                            <p class="text-[11px] text-slate-400">Status PTKP:</p>
+                            <ul class="list-disc list-inside mt-1 font-mono text-[11px] space-y-0.5">
+                                <li>TK/0 (Rp 54 Juta)</li>
+                                <li>TK/1 (Rp 58,5 Juta)</li>
+                                <li>K/0 (Rp 58,5 Juta)</li>
+                            </ul>
+                        </div>
+                        <div class="bg-navy-950 p-3 rounded-xl border border-slate-800">
+                            <strong class="text-blue-400 block mb-1">TER KATEGORI B</strong>
+                            <p class="text-[11px] text-slate-400">Status PTKP:</p>
+                            <ul class="list-disc list-inside mt-1 font-mono text-[11px] space-y-0.5">
+                                <li>TK/2 & K/1 (Rp 63 Juta)</li>
+                                <li>TK/3 & K/2 (Rp 67,5 Juta)</li>
+                            </ul>
+                        </div>
+                        <div class="bg-navy-950 p-3 rounded-xl border border-slate-800">
+                            <strong class="text-purple-400 block mb-1">TER KATEGORI C</strong>
+                            <p class="text-[11px] text-slate-400">Status PTKP:</p>
+                            <ul class="list-disc list-inside mt-1 font-mono text-[11px] space-y-0.5">
+                                <li>K/3 (Rp 72 Juta)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ketentuan Upah Mingguan -->
+                <div class="bg-navy-950 p-4 rounded-xl border border-slate-800 space-y-1">
+                    <h4 class="font-bold text-gold-400 text-sm mb-1">2. Ketentuan Pemotongan Pegawai Tetap Gaji Mingguan</h4>
+                    <p>• Upah mingguan dikonsolidasikan/dibulankan terlebih dahulu dengan dikalikan 4 (Gaji Bulanan = Gaji Mingguan × 4).</p>
+                    <p>• Tentukan persentase tarif TER bulanan berdasarkan hasil konsolidasi bulanan tersebut.</p>
+                    <p>• Hitung PPh 21 sebulan (Tarif TER × Bruto Bulanan), lalu bagi 4 untuk menentukan pemotongan PPh 21 per minggu.</p>
+                </div>
+
+                <!-- UU HPP Article 17 Rates -->
+                <div>
+                    <h4 class="font-bold text-gold-400 text-sm mb-2">3. Tarif Progresif Pasal 17 UU HPP (Masa Akhir Desember)</h4>
+                    <div class="bg-navy-950 rounded-xl border border-slate-800 p-3 font-mono text-[11px] space-y-1">
+                        <p>• Lapisan 1: s.d. Rp 60.000.000 = <strong class="text-gold-400">5%</strong></p>
+                        <p>• Lapisan 2: > Rp 60.000.000 s.d. Rp 250.000.000 = <strong class="text-gold-400">15%</strong></p>
+                        <p>• Lapisan 3: > Rp 250.000.000 s.d. Rp 500.000.000 = <strong class="text-gold-400">25%</strong></p>
+                        <p>• Lapisan 4: > Rp 500.000.000 s.d. Rp 5.000.000.000 = <strong class="text-gold-400">30%</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Siren Overlay -->
+    <div id="sirenOverlay" class="fixed inset-0 pointer-events-none z-40 hidden siren-active"></div>
+
+    <footer class="border-t border-slate-800 bg-navy-900 py-3 text-center text-[11px] text-slate-500">
+        Simulasi Audit Pajak PPh Pasal 21 &copy; Modul Pembelajaran SMK Akuntansi (PP 58/2023 & PMK 168/2023).
+    </footer>
+
+    <script>
+        // Web Audio API Synthesizer
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'stamp') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(140, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.6, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.15);
+                } else if (type === 'error') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(110, audioCtx.currentTime + 0.12);
+                    gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                } else if (type === 'success') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.25);
+                } else if (type === 'siren') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(650, audioCtx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(950, audioCtx.currentTime + 0.2);
+                    osc.frequency.linearRampToValueAtTime(650, audioCtx.currentTime + 0.4);
+                    gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.4);
+                }
+            } catch(e) { console.log('Audio Context Error:', e); }
+        }
+
+        let gameState = {
+            auditorName: '',
+            auditorNip: '',
+            auditorInstansi: '',
+            currentCaseIndex: 0,
+            score: 0,
+            strikes: 0,
+            maxStrikes: 3,
+            answersHistory: []
+        };
+
+        const auditCases = [
+            {
+                id: 1,
+                categoryType: "Pegawai Tetap Gaji Bulanan",
+                title: "Soal 1: Ahmad (Masa Januari)",
+                questionText: "Ahmad adalah karyawan tetap PT Sinar Maju dengan status TK/0. Pada bulan Januari, ia menerima gaji pokok dan tunjangan sebesar Rp6.200.000. Berdasarkan aturan PP 58/2023 dan PMK 168/2023, tentukan Kategori TER yang berlaku, hitung penghasilan bruto bulanan, dan hitung besarnya pemotongan PPh Pasal 21 bulanan Ahmad untuk bulan Januari!",
+                employeeName: "Ahmad",
+                statusPtkp: "TK/0",
+                payType: "Bulanan",
+                grossSalaryDoc: "Rp 6.200.000",
+                correctCategory: "TER A",
+                correctBrutoPkp: 6200000,
+                correctTax: 46500, // 0.75% * 6.200.000
+                explanation: "Bruto Rp 6.200.000 (TK/0 = TER A). Rentang Rp 5.950.000 - Rp 6.300.000 tarif TER A = 0,75%. PPh 21 = 0,75% x Rp 6.200.000 = Rp 46.500."
+            },
+            {
+                id: 2,
+                categoryType: "Pegawai Tetap Gaji Bulanan",
+                title: "Soal 2: Citra (Masa Februari)",
+                questionText: "Citra bekerja sebagai staf akuntansi tetap dengan status K/1. Pada bulan Februari, total penghasilan brutonya adalah Rp8.500.000. Tentukan Kategori TER yang tepat, tentukan dasar bruto bulanan, dan hitung potongan PPh 21 Citra untuk bulan Februari!",
+                employeeName: "Citra",
+                statusPtkp: "K/1",
+                payType: "Bulanan",
+                grossSalaryDoc: "Rp 8.500.000",
+                correctCategory: "TER B",
+                correctBrutoPkp: 8500000,
+                correctTax: 85000, // 1% * 8.500.000
+                explanation: "Bruto Rp 8.500.000 (K/1 = TER B). Tarif TER B = 1%. PPh 21 = 1% x Rp 8.500.000 = Rp 85.000."
+            },
+            {
+                id: 3,
+                categoryType: "Pegawai Tetap Gaji Bulanan",
+                title: "Soal 3: Dani (Masa Maret)",
+                questionText: "Dani merupakan manajer tetap yang berstatus K/3. Pada bulan Maret, Dani menerima total penghasilan bruto sebesar Rp15.000.000. Hitunglah Kategori TER, dasar bruto sebulan, dan potongan PPh 21 Dani untuk bulan Maret!",
+                employeeName: "Dani",
+                statusPtkp: "K/3",
+                payType: "Bulanan",
+                grossSalaryDoc: "Rp 15.000.000",
+                correctCategory: "TER C",
+                correctBrutoPkp: 15000000,
+                correctTax: 750000, // 5% * 15.000.000
+                explanation: "Bruto Rp 15.000.000 (K/3 = TER C). Tarif TER C = 5%. PPh 21 = 5% x Rp 15.000.000 = Rp 750.000."
+            },
+            {
+                id: 4,
+                categoryType: "Pegawai Tetap Gaji Bulanan",
+                title: "Soal 4: Eko (Gaji di Bawah Batas TER)",
+                questionText: "Eko adalah karyawan baru berstatus TK/0. Gaji bruto bulanannya adalah Rp5.000.000. Tentukan Kategori TER dan hitung PPh 21 terutang Eko bulan ini!",
+                employeeName: "Eko",
+                statusPtkp: "TK/0",
+                payType: "Bulanan",
+                grossSalaryDoc: "Rp 5.000.000",
+                correctCategory: "TER A",
+                correctBrutoPkp: 5000000,
+                correctTax: 0, // 0%
+                explanation: "Penghasilan Rp 5.000.000 di bawah Rp 5.400.000 pada TER A dikenakan tarif 0% (PPh 21 Nihil = Rp 0)."
+            },
+            {
+                id: 5,
+                categoryType: "Pegawai Tetap Gaji Bulanan",
+                title: "Soal 5: Farah (Gaji + Bonus Performa)",
+                questionText: "Farah (status K/0) memiliki gaji pokok Rp7.000.000 sebulan. Pada bulan April ia menerima bonus performa sebesar Rp3.000.000. Hitung total bruto bulan April, tentukan TER yang berlaku, dan hitung PPh 21 yang dipotong bulan April!",
+                employeeName: "Farah",
+                statusPtkp: "K/0",
+                payType: "Bulanan (Gaji + Bonus)",
+                grossSalaryDoc: "Gaji Rp7.000.000 + Bonus Rp3.000.000",
+                correctCategory: "TER A",
+                correctBrutoPkp: 10000000,
+                correctTax: 200000, // 2% * 10.000.000
+                explanation: "Total Bruto = Rp 10.000.000 (K/0 = TER A). Rentang Rp 9.650.000 - Rp 10.050.000 tarif TER A = 2%. PPh 21 = 2% x Rp 10.000.000 = Rp 200.000."
+            },
+            {
+                id: 6,
+                categoryType: "Rekonsiliasi Masa Akhir Desember",
+                title: "Soal 6: Gani (Rekonsiliasi Akhir Tahun)",
+                questionText: "Gani (TK/0) memiliki Penghasilan Kena Pajak (PKP) setelah dikurangi Biaya Jabatan dan PTKP yang dihitung pada bulan Desember sebesar Rp75.000.000 untuk setahun. Tentukan skema tarif yang digunakan dan hitung total PPh 21 setahun Gani menggunakan tarif progresif Pasal 17 UU HPP!",
+                employeeName: "Gani",
+                statusPtkp: "TK/0",
+                payType: "Tahunan (PKP Akhir Tahun)",
+                grossSalaryDoc: "PKP Setahun: Rp 75.000.000",
+                correctCategory: "Pasal 17",
+                correctBrutoPkp: 75000000,
+                correctTax: 5250000, // (5% * 60jt = 3jt) + (15% * 15jt = 2.25jt)
+                explanation: "Skema Pasal 17 UU HPP: Lapisan 1 (5% x Rp 60.000.000) = Rp 3.000.000. Lapisan 2 (15% x sisa Rp 15.000.000) = Rp 2.250.000. Total PPh 21 Setahun = Rp 5.250.000."
+            },
+            {
+                id: 7,
+                categoryType: "Pegawai Tetap Gaji Mingguan",
+                title: "Soal 7: Hendra (Upah Mingguan Kategori A)",
+                questionText: "Hendra adalah pegawai tetap dengan status TK/0 yang menerima gaji mingguan sebesar Rp1.500.000. Sesuai regulasi, hitunglah estimasi bruto sebulan (konsolidasi 4 minggu), tentukan Kategori TER, dan hitung potongan PPh 21 Hendra pada minggu pertama!",
+                employeeName: "Hendra",
+                statusPtkp: "TK/0",
+                payType: "Mingguan (Rp 1.500.000/minggu)",
+                grossSalaryDoc: "Gaji Mingguan: Rp 1.500.000",
+                correctCategory: "TER A",
+                correctBrutoPkp: 6000000, // 1.500.000 * 4
+                correctTax: 11250, // (0.75% * 6.000.000) / 4
+                explanation: "Estimasi Bruto Sebulan = Rp 1.500.000 x 4 = Rp 6.000.000 (TK/0 = TER A, tarif 0,75%). PPh 21 sebulan = Rp 45.000. PPh 21 per minggu = Rp 45.000 / 4 = Rp 11.250."
+            },
+            {
+                id: 8,
+                categoryType: "Pegawai Tetap Gaji Mingguan",
+                title: "Soal 8: Indah (Upah Mingguan Kategori B)",
+                questionText: "Indah adalah karyawati tetap dengan status K/2 yang menerima gaji mingguan sebesar Rp2.000.000. Hitunglah estimasi bruto bulanan, tentukan Kategori TER, dan hitung potongan PPh 21 per minggu untuk Indah!",
+                employeeName: "Indah",
+                statusPtkp: "K/2",
+                payType: "Mingguan (Rp 2.000.000/minggu)",
+                grossSalaryDoc: "Gaji Mingguan: Rp 2.000.000",
+                correctCategory: "TER B",
+                correctBrutoPkp: 8000000, // 2.000.000 * 4
+                correctTax: 20000, // (1% * 8.000.000) / 4
+                explanation: "Estimasi Bruto Sebulan = Rp 2.000.000 x 4 = Rp 8.000.000 (K/2 = TER B, tarif 1%). PPh 21 sebulan = Rp 80.000. PPh 21 per minggu = Rp 80.000 / 4 = Rp 20.000."
+            },
+            {
+                id: 9,
+                categoryType: "Pegawai Tetap Gaji Mingguan",
+                title: "Soal 9: Joko (Upah Mingguan Kategori C)",
+                questionText: "Joko berstatus K/3 bekerja sebagai supervisor tetap dengan upah mingguan Rp3.000.000. Hitung estimasi bruto sebulan, Kategori TER yang berlaku, dan potongan PPh 21 per minggu yang dipotong oleh perusahaan!",
+                employeeName: "Joko",
+                statusPtkp: "K/3",
+                payType: "Mingguan (Rp 3.000.000/minggu)",
+                grossSalaryDoc: "Gaji Mingguan: Rp 3.000.000",
+                correctCategory: "TER C",
+                correctBrutoPkp: 12000000, // 3.000.000 * 4
+                correctTax: 60000, // (2% * 12.000.000) / 4
+                explanation: "Estimasi Bruto Sebulan = Rp 3.000.000 x 4 = Rp 12.000.000 (K/3 = TER C, tarif 2%). PPh 21 sebulan = Rp 240.000. PPh 21 per minggu = Rp 240.000 / 4 = Rp 60.000."
+            },
+            {
+                id: 10,
+                categoryType: "Pegawai Tetap Gaji Mingguan",
+                title: "Soal 10: Kevin (Mingguan + Lembur)",
+                questionText: "Kevin (TK/1) biasanya menerima gaji mingguan Rp1.500.000. Namun pada minggu kedua, ia mendapat uang lembur sebesar Rp1.000.000, sehingga total bruto minggu itu menjadi Rp2.500.000. Hitunglah konsolidasi bruto sebulan khusus minggu tersebut, Kategori TER, dan PPh 21 yang dipotong khusus pada minggu kedua!",
+                employeeName: "Kevin",
+                statusPtkp: "TK/1",
+                payType: "Mingguan + Lembur",
+                grossSalaryDoc: "Gaji Rp1.500.000 + Lembur Rp1.000.000",
+                correctCategory: "TER A",
+                correctBrutoPkp: 10000000, // 2.500.000 * 4
+                correctTax: 50000, // (2% * 10.000.000) / 4
+                explanation: "Bruto khusus minggu tersebut disetarakan sebulan = Rp 2.500.000 x 4 = Rp 10.000.000 (TK/1 = TER A, tarif 2%). PPh 21 sebulan = Rp 200.000. PPh 21 Minggu ke-2 = Rp 200.000 / 4 = Rp 50.000."
+            },
+            {
+                id: 11,
+                categoryType: "Pegawai Tetap Gaji Mingguan",
+                title: "Soal 11: Lestari (Mingguan di Bawah TER)",
+                questionText: "Lestari (TK/0) menerima upah mingguan sebesar Rp1.200.000. Hitung konsolidasi bruto sebulan, Kategori TER, dan tentukan potongan PPh 21 mingguan Lestari!",
+                employeeName: "Lestari",
+                statusPtkp: "TK/0",
+                payType: "Mingguan (Rp 1.200.000/minggu)",
+                grossSalaryDoc: "Gaji Mingguan: Rp 1.200.000",
+                correctCategory: "TER A",
+                correctBrutoPkp: 4800000, // 1.200.000 * 4
+                correctTax: 0, // 0%
+                explanation: "Bruto sebulan = Rp 1.200.000 x 4 = Rp 4.800.000 (di bawah Rp 5.400.000 pada TER A, tarif 0%). PPh 21 Mingguan = Rp 0 (Nihil)."
+            },
+            {
+                id: 12,
+                categoryType: "Rekonsiliasi Masa Akhir Desember",
+                title: "Soal 12: Rekonsiliasi Akhir Tahun Karyawan Mingguan",
+                questionText: "Total akumulasi penghasilan bruto setahun seorang karyawan tetap gaji mingguan setelah dijumlahkan dari Januari-Desember adalah Rp140.000.000. Setelah dikurangi Biaya Jabatan dan PTKP, diperoleh PKP setahun sebesar Rp50.000.000. Hitunglah total PPh 21 setahun menggunakan skema tarif progresif Pasal 17 UU HPP!",
+                employeeName: "Pegawai Mingguan (Anonim)",
+                statusPtkp: "Karyawan Tetap",
+                payType: "Tahunan (PKP Akhir Tahun)",
+                grossSalaryDoc: "PKP Setahun: Rp 50.000.000",
+                correctCategory: "Pasal 17",
+                correctBrutoPkp: 50000000,
+                correctTax: 2500000, // 5% * 50.000.000
+                explanation: "PKP Rp 50.000.000 berada pada Lapisan 1 (maksimal Rp 60.000.000) dengan tarif 5%. PPh 21 Akhir Tahun = 5% x Rp 50.000.000 = Rp 2.500.000."
+            },
+            {
+                id: 13,
+                categoryType: "Pegawai Tetap Gaji Bulanan + BPJS",
+                title: "Soal 13: Raditya (Gaji Pokok + Premi BPJS)",
+                questionText: "Raditya adalah karyawan tetap status TK/0. Ia menerima gaji pokok Rp8.000.000 per bulan. Perusahaan menanggung iuran BPJS Kesehatan sebesar 4%, JKK 0,24%, dan JKM 0,3% dari gaji pokok. Hitung total penghasilan bruto bulanan Raditya, tentukan Kategori TER, dan hitung potongan PPh 21 bulanannya!",
+                employeeName: "Raditya",
+                statusPtkp: "TK/0",
+                payType: "Bulanan + Premi BPJS",
+                grossSalaryDoc: "Gaji Pokok Rp8.000.000 + BPJS Kes 4% + JKK 0,24% + JKM 0,3%",
+                correctCategory: "TER A",
+                correctBrutoPkp: 8363200, // 8.000.000 + 320.000 + 19.200 + 24.000
+                correctTax: 125448, // 1.5% * 8.363.200
+                explanation: "Gaji = Rp 8.000.000. BPJS Kes (4%) = Rp 320.000, JKK (0,24%) = Rp 19.200, JKM (0,3%) = Rp 24.000. Total Bruto = Rp 8.363.200. (TK/0 = TER A, tarif 1,5%). PPh 21 = 1,5% x Rp 8.363.200 = Rp 125.448."
+            }
+        ];
+
+        function toggleReferenceModal() {
+            const modal = document.getElementById('referenceModal');
+            modal.classList.toggle('hidden');
+        }
+
+        function formatRupiahInput(input) {
+            let val = input.value.replace(/\D/g, '');
+            if (val) {
+                input.value = parseInt(val, 10).toLocaleString('id-ID');
+            } else {
+                input.value = '';
+            }
+        }
+
+        function parseRupiah(str) {
+            if (!str) return 0;
+            return parseInt(str.toString().replace(/\D/g, ''), 10) || 0;
+        }
+
+        function formatRp(val) {
+            return 'Rp ' + Math.round(val).toLocaleString('id-ID');
+        }
+
+        function startGame(e) {
+            e.preventDefault();
+            const name = document.getElementById('auditorName').value.trim();
+            const nip = document.getElementById('auditorNip').value.trim();
+            const instansi = document.getElementById('auditorInstansi').value.trim();
+
+            if (!name || !nip || !instansi) return;
+
+            gameState.auditorName = name;
+            gameState.auditorNip = nip;
+            gameState.auditorInstansi = instansi;
+            gameState.currentCaseIndex = 0;
+            gameState.score = 0;
+            gameState.strikes = 0;
+            gameState.answersHistory = [];
+
+            document.getElementById('headerAuditorName').innerText = `${name} (${instansi})`;
+            document.getElementById('userInfoHeader').classList.remove('hidden');
+
+            document.getElementById('introScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+
+            loadCurrentCase();
+        }
+
+        function loadCurrentCase() {
+            const c = auditCases[gameState.currentCaseIndex];
+
+            // Reset UI State
+            document.getElementById('stampOverlay').classList.add('hidden');
+            document.getElementById('feedbackBox').classList.add('hidden');
+            document.getElementById('auditAnswerForm').reset();
+            document.getElementById('btnSubmitAudit').disabled = false;
+
+            // Update Labels for Reconciliations vs Monthly
+            if (c.correctCategory === "Pasal 17") {
+                document.getElementById('labelBrutoPkp').innerText = "2. Dasar PKP Setahun (Rp)";
+                document.getElementById('helpBrutoPkp').innerText = "Masukkan nominal Penghasilan Kena Pajak (PKP) setahun";
+                document.getElementById('labelFinalTax').innerText = "3. Total PPh 21 Terutang Setahun (Rp)";
+                document.getElementById('helpFinalTax').innerText = "Hitung PPh 21 setahun dengan tarif progresif Pasal 17 UU HPP";
+            } else {
+                document.getElementById('labelBrutoPkp').innerText = "2. Dasar Penghasilan Bruto Sebulan (Rp)";
+                document.getElementById('helpBrutoPkp').innerText = "Untuk gaji mingguan, masukkan hasil konsolidasi sebulan (Gaji Mingguan x 4)";
+                document.getElementById('labelFinalTax').innerText = "3. Hasil Akhir PPh Pasal 21 Terutang (Rp)";
+                document.getElementById('helpFinalTax').innerText = "Masukkan PPh 21 bulanan (atau PPh 21 mingguan untuk pegawai mingguan)";
+            }
+
+            // Update HUD Progress
+            document.getElementById('hudProgress').innerText = `${c.id} / ${auditCases.length}`;
+            document.getElementById('hudScore').innerText = `${gameState.score} Pts`;
+            
+            // Render Case Details
+            document.getElementById('caseCategoryBadge').innerText = c.categoryType;
+            document.getElementById('caseIdBadge').innerText = `Soal #${c.id} dari ${auditCases.length}`;
+            document.getElementById('caseTitle').innerText = c.title;
+            document.getElementById('caseText').innerText = c.questionText;
+
+            // Render Slip Paper
+            const docContainer = document.getElementById('docDetailsList');
+            docContainer.innerHTML = `
+                <div class="flex justify-between border-b border-slate-200 pb-1"><span>Nama Pegawai:</span> <strong class="text-slate-900">${c.employeeName}</strong></div>
+                <div class="flex justify-between border-b border-slate-200 pb-1"><span>Status PTKP:</span> <strong class="text-slate-900">${c.statusPtkp}</strong></div>
+                <div class="flex justify-between border-b border-slate-200 pb-1"><span>Skema Penggajian:</span> <strong class="text-slate-900">${c.payType}</strong></div>
+                <div class="flex justify-between font-bold text-slate-900 pt-1"><span>Dokumen Komponen Gaji:</span> <span>${c.grossSalaryDoc}</span></div>
+            `;
+
+            updateStrikesHUD();
+        }
+
+        function updateStrikesHUD() {
+            const container = document.getElementById('hudStrikes');
+            container.innerHTML = '';
+            for (let i = 0; i < gameState.maxStrikes; i++) {
+                if (i < (gameState.maxStrikes - gameState.strikes)) {
+                    container.innerHTML += `<i class="fa-solid fa-shield-halved text-emerald-400 text-base"></i>`;
+                } else {
+                    container.innerHTML += `<i class="fa-solid fa-triangle-exclamation text-red-500 text-base animate-pulse"></i>`;
+                }
+            }
+
+            const statusLabel = document.getElementById('hudStatus');
+            if (gameState.strikes === 0) {
+                statusLabel.innerText = "PATUH & BEBAS KASUS";
+                statusLabel.className = "text-xs font-bold text-emerald-400 mt-1";
+            } else if (gameState.strikes === 1) {
+                statusLabel.innerText = "PERINGATAN AUDIT (1 ERROR)";
+                statusLabel.className = "text-xs font-bold text-amber-400 mt-1";
+            } else if (gameState.strikes === 2) {
+                statusLabel.innerText = "BAHAYA (1 ERROR LAGI = DITANGKAP)";
+                statusLabel.className = "text-xs font-bold text-red-500 mt-1 animate-pulse";
+            }
+        }
+
+        function submitAuditFinding(e) {
+            e.preventDefault();
+            const c = auditCases[gameState.currentCaseIndex];
+
+            const userCategory = document.getElementById('inputCategory').value;
+            const userBrutoPkp = parseRupiah(document.getElementById('inputBrutoPkp').value);
+            const userTax = parseRupiah(document.getElementById('inputTaxAmount').value);
+
+            // Strict Verification Matching Ground Truth
+            const categoryMatch = userCategory === c.correctCategory;
+            const brutoPkpMatch = Math.abs(userBrutoPkp - c.correctBrutoPkp) <= 10;
+            const taxMatch = Math.abs(userTax - c.correctTax) <= 2; // Tolerance for rounding
+
+            const isCorrect = categoryMatch && brutoPkpMatch && taxMatch;
+
+            document.getElementById('btnSubmitAudit').disabled = true;
+
+            const stampOverlay = document.getElementById('stampOverlay');
+            const stampBadge = document.getElementById('stampBadge');
+            stampOverlay.classList.remove('hidden');
+
+            if (isCorrect) {
+                playSound('stamp');
+                playSound('success');
+                stampBadge.innerText = "AUDIT PASSED";
+                stampBadge.className = "border-4 px-6 py-3 rounded-2xl text-2xl font-black uppercase tracking-widest stamp-effect border-emerald-600 text-emerald-600 bg-emerald-100/90";
+                
+                gameState.score += 10;
+                showFeedback(true, c, userCategory, userBrutoPkp, userTax);
+            } else {
+                playSound('stamp');
+                playSound('error');
+                stampBadge.innerText = "TEMUAN GAGAL";
+                stampBadge.className = "border-4 px-6 py-3 rounded-2xl text-2xl font-black uppercase tracking-widest stamp-effect border-red-600 text-red-600 bg-red-100/90";
+                
+                gameState.strikes += 1;
+                updateStrikesHUD();
+                showFeedback(false, c, userCategory, userBrutoPkp, userTax);
+
+                if (gameState.strikes >= gameState.maxStrikes) {
+                    setTimeout(() => {
+                        triggerPoliceArrest();
+                    }, 1800);
+                    return;
+                }
+            }
+
+            gameState.answersHistory.push({
+                caseId: c.id,
+                title: c.title,
+                isCorrect: isCorrect,
+                userCategory: userCategory,
+                userBrutoPkp: userBrutoPkp,
+                correctBrutoPkp: c.correctBrutoPkp,
+                userTax: userTax,
+                correctTax: c.correctTax
+            });
+        }
+
+        function showFeedback(isCorrect, c, uCat, uBruto, uTax) {
+            const box = document.getElementById('feedbackBox');
+            const header = document.getElementById('feedbackHeader');
+            const details = document.getElementById('feedbackDetails');
+
+            box.classList.remove('hidden');
+
+            if (isCorrect) {
+                header.className = "flex items-center gap-2 font-bold text-sm text-emerald-400";
+                header.innerHTML = `<i class="fa-solid fa-circle-check text-base"></i> HASIL AUDIT PRESISI & TEPAT (+10 Pts)`;
+            } else {
+                header.className = "flex items-center gap-2 font-bold text-sm text-red-400";
+                header.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-base"></i> KESALAHAN AUDIT DITEMUKAN`;
+            }
+
+            details.innerHTML = `
+                <div class="border-b border-slate-800 pb-2">
+                    <p class="text-slate-400">Analisis Kunci Jawaban vs Input Siswa:</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-[11px]">
+                    <div>
+                        <span class="text-slate-400">Kategori / Skema:</span><br>
+                        Input: <strong class="${uCat === c.correctCategory ? 'text-emerald-400' : 'text-red-400'}">${uCat || '-'}</strong><br>
+                        Kunci: <strong class="text-emerald-400">${c.correctCategory}</strong>
+                    </div>
+                    <div>
+                        <span class="text-slate-400">Bruto Sebulan / PKP:</span><br>
+                        Input: <strong class="${Math.abs(uBruto - c.correctBrutoPkp) <= 10 ? 'text-emerald-400' : 'text-red-400'}">${formatRp(uBruto)}</strong><br>
+                        Kunci: <strong class="text-emerald-400">${formatRp(c.correctBrutoPkp)}</strong>
+                    </div>
+                    <div>
+                        <span class="text-slate-400">PPh 21 Terutang:</span><br>
+                        Input: <strong class="${Math.abs(uTax - c.correctTax) <= 2 ? 'text-emerald-400' : 'text-red-400'}">${formatRp(uTax)}</strong><br>
+                        Kunci: <strong class="text-emerald-400 font-bold">${formatRp(c.correctTax)}</strong>
+                    </div>
+                </div>
+                <div class="pt-2 text-[10px] text-slate-300 border-t border-slate-800">
+                    <em class="text-gold-400">Pembahasan: ${c.explanation}</em>
+                </div>
+            `;
+        }
+
+        function nextCase() {
+            gameState.currentCaseIndex++;
+            if (gameState.currentCaseIndex < auditCases.length) {
+                loadCurrentCase();
+            } else {
+                showFinalResults();
+            }
+        }
+
+        function triggerPoliceArrest() {
+            document.getElementById('gameScreen').classList.add('hidden');
+            
+            const siren = document.getElementById('sirenOverlay');
+            siren.classList.remove('hidden');
+
+            let sirenCount = 0;
+            const sirenInterval = setInterval(() => {
+                playSound('siren');
+                sirenCount++;
+                if (sirenCount > 6) clearInterval(sirenInterval);
+            }, 450);
+
+            document.getElementById('bapAuditorName').innerText = gameState.auditorName;
+            document.getElementById('bapAuditorNip').innerText = gameState.auditorNip;
+            document.getElementById('bapAuditorInstansi').innerText = gameState.auditorInstansi;
+
+            setTimeout(() => {
+                siren.classList.add('hidden');
+                document.getElementById('policeScreen').classList.remove('hidden');
+            }, 2500);
+        }
+
+        function showFinalResults() {
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.remove('hidden');
+
+            const correctCount = gameState.answersHistory.filter(h => h.isCorrect).length;
+            const scoreTotal = (correctCount / auditCases.length) * 100;
+
+            document.getElementById('finalScore').innerText = scoreTotal.toFixed(0);
+            document.getElementById('finalAccuracy').innerText = `${correctCount} / ${auditCases.length}`;
+
+            let predicate = "Perlu Bimbingan Ulang";
+            if (scoreTotal >= 90) predicate = "AUDITOR PAJAK UNGGULAN (LISENSI A)";
+            else if (scoreTotal >= 70) predicate = "AUDITOR AKUNTANSI COMPETENT";
+            else if (scoreTotal >= 50) predicate = "JUNIOR AUDITOR CUKUP";
+
+            document.getElementById('finalPredicate').innerText = predicate;
+
+            const list = document.getElementById('resultBreakdownList');
+            list.innerHTML = '';
+            gameState.answersHistory.forEach((h, idx) => {
+                list.innerHTML += `
+                    <div class="bg-navy-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
+                        <div>
+                            <span class="font-bold text-slate-200">Soal #${h.caseId}: ${h.title}</span>
+                            <p class="text-[10px] text-slate-400">Bruto: ${formatRp(h.userBrutoPkp)} | PPh 21 Siswa: ${formatRp(h.userTax)} | Kunci PPh: ${formatRp(h.correctTax)}</p>
+                        </div>
+                        <span class="px-2 py-1 rounded text-[10px] font-bold ${h.isCorrect ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}">
+                            ${h.isCorrect ? 'BENAR' : 'SALAH'}
+                        </span>
+                    </div>
+                `;
+            });
+        }
+
+        function exportToExcel() {
+            const correctCount = gameState.answersHistory.filter(h => h.isCorrect).length;
+            const scoreTotal = (correctCount / auditCases.length) * 100;
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "REKAPITULASI HASIL AUDIT PPh 21 TER - SMK AKUNTANSI\n";
+            csvContent += `Nama Siswa,${gameState.auditorName}\n`;
+            csvContent += `NISN / NIP,${gameState.auditorNip}\n`;
+            csvContent += `Kelas / Rombel,${gameState.auditorInstansi}\n`;
+            csvContent += `Tanggal Ujian,${new Date().toLocaleDateString('id-ID')}\n`;
+            csvContent += `Nilai Akhir Total,${scoreTotal.toFixed(0)}\n`;
+            csvContent += `Akurasi Soal,${correctCount} dari ${auditCases.length} Soal Benar\n\n`;
+
+            csvContent += "No Soal,Judul Kasus Audit,Kategori TER Input,Bruto/PKP Siswa (Rp),PPh 21 Siswa (Rp),PPh 21 Kunci (Rp),Status\n";
+
+            gameState.answersHistory.forEach(h => {
+                csvContent += `"#${h.caseId}","${h.title}","${h.userCategory}","${h.userBrutoPkp}","${h.userTax}","${h.correctTax}","${h.isCorrect ? 'BENAR' : 'SALAH'}"\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Hasil_Audit_PPh21_${gameState.auditorName.replace(/\s+/g, '_')}_${gameState.auditorInstansi.replace(/\s+/g, '_')}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function resetGame() {
+            document.getElementById('policeScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.add('hidden');
+            document.getElementById('introScreen').classList.remove('hidden');
+            document.getElementById('userInfoHeader').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
